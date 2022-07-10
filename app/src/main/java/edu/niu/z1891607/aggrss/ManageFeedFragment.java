@@ -60,6 +60,7 @@ public class ManageFeedFragment extends Fragment {
                 view.setBackgroundColor(getResources().getColor(R.color.transparent));
 
             ((Feed) parent.getAdapter().getItem(pos)).toggleEnabled();
+            saveFeeds();
         });
 
         FloatingActionButton fab = v.findViewById(R.id.fab_add);
