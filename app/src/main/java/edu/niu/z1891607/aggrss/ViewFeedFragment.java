@@ -19,6 +19,7 @@ import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -64,63 +65,15 @@ public class ViewFeedFragment extends Fragment {
 
     public void onViewCreated(@NonNull View v, Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
-        executor.execute(() -> {
-            entries = new ArrayList<>();
-            for(Feed feed : mCallback.getFeedsArray())
-            {
-                if(feed.isEnabled()) {
-                    try {
-                        SAXHandler saxHandler = new SAXHandler();
-                        SAXParserFactory.newInstance().newSAXParser().parse(feed.getUrl(),
-                                saxHandler);
-                        entries.addAll(saxHandler.getEntries());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
 
-            DateTimeFormatter formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
-            Collections.sort(entries, (o1, o2) -> {
-                ZonedDateTime zdt1;
-                if(o1.getDate() != null)
-                    zdt1 = ZonedDateTime.parse(o1.getDate(), formatter);
-                else
-                    zdt1 = ZonedDateTime.now();
-                ZonedDateTime instantInUTC1 = zdt1.withZoneSameInstant(ZoneId.of("UTC"));
-
-                ZonedDateTime zdt2;
-                if(o2.getDate() != null)
-                    zdt2 = ZonedDateTime.parse(o2.getDate(), formatter);
-                else
-                    zdt2 = ZonedDateTime.now();
-                ZonedDateTime instantInUTC2 = zdt2.withZoneSameInstant(ZoneId.of("UTC"));
-
-                return instantInUTC2.compareTo(instantInUTC1);
-            });
-
-            for(Entry e : entries)
-            {
-                if(e.getDate() != null) {
-                    ZonedDateTime zdt1 = ZonedDateTime.parse(e.getDate(), formatter);
-                    ZonedDateTime local = zdt1.withZoneSameInstant(ZoneId.systemDefault());
-                    e.setDate(local.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM,
-                            FormatStyle.SHORT)));
-                }
-                else
-                    e.setDate("");
-            }
-
-            handler.post(() -> {
-                ListView listView = v.findViewById(R.id.feed_entries_list);
-                adapter = new EntryAdapter(entries, getContext());
-                listView.setAdapter(adapter);
-                listView.setOnItemClickListener((adapterView, view, i, l) -> {
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            Uri.parse(entries.get(i).getLink())));
-                });
-            });
+        SwipeRefreshLayout refreshLayout = v.findViewById(R.id.refresh_layout);
+        refreshLayout.setOnRefreshListener(() -> {
+            getAndDisplayEntries(v);
+            removedEntries.clear();
+            refreshLayout.setRefreshing(false);
         });
+
+        getAndDisplayEntries(v);
     }
 
     public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
@@ -193,5 +146,65 @@ public class ViewFeedFragment extends Fragment {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void getAndDisplayEntries(View v) {
+        executor.execute(() -> {
+            entries = new ArrayList<>();
+            for(Feed feed : mCallback.getFeedsArray())
+            {
+                if(feed.isEnabled()) {
+                    try {
+                        SAXHandler saxHandler = new SAXHandler();
+                        SAXParserFactory.newInstance().newSAXParser().parse(feed.getUrl(),
+                                saxHandler);
+                        entries.addAll(saxHandler.getEntries());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            DateTimeFormatter formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
+            Collections.sort(entries, (o1, o2) -> {
+                ZonedDateTime zdt1;
+                if(o1.getDate() != null)
+                    zdt1 = ZonedDateTime.parse(o1.getDate(), formatter);
+                else
+                    zdt1 = ZonedDateTime.now();
+                ZonedDateTime instantInUTC1 = zdt1.withZoneSameInstant(ZoneId.of("UTC"));
+
+                ZonedDateTime zdt2;
+                if(o2.getDate() != null)
+                    zdt2 = ZonedDateTime.parse(o2.getDate(), formatter);
+                else
+                    zdt2 = ZonedDateTime.now();
+                ZonedDateTime instantInUTC2 = zdt2.withZoneSameInstant(ZoneId.of("UTC"));
+
+                return instantInUTC2.compareTo(instantInUTC1);
+            });
+
+            for(Entry e : entries)
+            {
+                if(e.getDate() != null) {
+                    ZonedDateTime zdt1 = ZonedDateTime.parse(e.getDate(), formatter);
+                    ZonedDateTime local = zdt1.withZoneSameInstant(ZoneId.systemDefault());
+                    e.setDate(local.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM,
+                            FormatStyle.SHORT)));
+                }
+                else
+                    e.setDate("");
+            }
+
+            handler.post(() -> {
+                ListView listView = v.findViewById(R.id.feed_entries_list);
+                adapter = new EntryAdapter(entries, getContext());
+                listView.setAdapter(adapter);
+                listView.setOnItemClickListener((adapterView, view, i, l) -> {
+                    startActivity(new Intent(Intent.ACTION_VIEW,
+                            Uri.parse(entries.get(i).getLink())));
+                });
+            });
+        });
     }
 }
