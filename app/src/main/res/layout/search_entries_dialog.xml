@@ -19,4 +19,24 @@
         android:importantForAutofill="no"
         android:inputType="text"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Date Range"
+        android:layout_gravity="center_horizontal"/>
+
+    <Button
+        android:id="@+id/date_range_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Choose dates"/>
+
+    <TextView
+        android:id="@+id/chosen_dates_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Choose dates:"/>
+
 </LinearLayout>

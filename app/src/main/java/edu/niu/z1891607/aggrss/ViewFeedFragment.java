@@ -7,20 +7,25 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.android.material.datepicker.MaterialDatePicker;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -29,10 +34,10 @@ import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.xml.parsers.SAXParserFactory;
 
@@ -91,16 +96,58 @@ public class ViewFeedFragment extends Fragment {
                     .inflate(R.layout.search_entries_dialog, (ViewGroup) getView(),
                             false);
             EditText titleET = inflated.findViewById(R.id.entry_title_et);
+
+            AtomicReference<LocalDateTime> startDate = new AtomicReference<>(LocalDateTime.MIN);
+            AtomicReference<LocalDateTime> endDate = new AtomicReference<>(LocalDateTime.MAX);
+            AtomicBoolean chosenDates = new AtomicBoolean(false);
+
+            Button rangeBtn = inflated.findViewById(R.id.date_range_btn);
+            rangeBtn.setOnClickListener(v -> {
+                MaterialDatePicker<Pair<Long, Long>> rangePicker =
+                        MaterialDatePicker.Builder.dateRangePicker()
+                                .setTitleText("Select range of dates").build();
+                rangePicker.addOnPositiveButtonClickListener(selection -> {
+                    chosenDates.set(true);
+
+                    startDate.set(LocalDateTime.ofInstant(Instant.ofEpochMilli(selection.first),
+                                ZoneId.of("UTC")));
+
+                    endDate.set(LocalDateTime.ofInstant(Instant.ofEpochMilli(selection.second),
+                                ZoneId.of("UTC")).plusDays(1));
+
+                    TextView selected = inflated.findViewById(R.id.chosen_dates_tv);
+                    DateTimeFormatter formatter =
+                            DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
+                    selected.setText("Chosen Dates: " + formatter.format(startDate.get()) + " - "
+                    + formatter.format(endDate.get().minusDays(1)));
+                });
+
+                rangePicker.show(requireActivity().getSupportFragmentManager(),
+                        "FILTER_PICKER");
+            });
+
             builder.setView(inflated);
 
             builder.setPositiveButton("Search", (dialog, i) -> {
                 String searchTerm = titleET.getText().toString().toLowerCase().trim();
 
+                DateTimeFormatter formatter = DateTimeFormatter
+                        .ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT);
+
                 Iterator<Entry> it = entries.iterator();
                 while(it.hasNext())
                 {
                     Entry e = it.next();
-                    if(!e.getTitle().toLowerCase().contains(searchTerm)) {
+
+                    LocalDateTime ldt;
+                    if(!e.getDate().equals(""))
+                        ldt = LocalDateTime.parse(e.getDate(), formatter);
+                    else
+                        ldt = LocalDateTime.MAX;
+
+                    if(!e.getTitle().toLowerCase().contains(searchTerm)
+                            || (!(ldt.compareTo(startDate.get()) >= 0) && chosenDates.get())
+                            || (!(ldt.compareTo(endDate.get()) < 0) && chosenDates.get())) {
                         removedEntries.add(e);
                         it.remove();
                         adapter.notifyDataSetChanged();
@@ -111,28 +158,34 @@ public class ViewFeedFragment extends Fragment {
                 while(it.hasNext())
                 {
                     Entry e = it.next();
-                    if(e.getTitle().toLowerCase().contains(searchTerm))
-                    {
+
+                    LocalDateTime ldt;
+                    if(!e.getDate().equals(""))
+                        ldt = LocalDateTime.parse(e.getDate(), formatter);
+                    else
+                        ldt = LocalDateTime.MAX;
+
+                    if(e.getTitle().toLowerCase().contains(searchTerm)
+                            && ((ldt.compareTo(startDate.get()) >= 0)
+                            && (ldt.compareTo(endDate.get()) < 0) || !chosenDates.get())) {
                         entries.add(e);
                         it.remove();
                         adapter.notifyDataSetChanged();
                     }
                 }
+
                 Collections.sort(entries, (o1, o2) -> {
-                    DateTimeFormatter formatter = DateTimeFormatter
-                            .ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT);
                     LocalDateTime ldt1;
                     if(!o1.getDate().equals(""))
                         ldt1 = LocalDateTime.parse(o1.getDate(), formatter);
                     else
-                        ldt1 = LocalDateTime.now();
-
+                        ldt1 = LocalDateTime.MAX;
 
                     LocalDateTime ldt2;
                     if(!o2.getDate().equals(""))
                         ldt2 = LocalDateTime.parse(o2.getDate(), formatter);
                     else
-                        ldt2 = LocalDateTime.now();
+                        ldt2 = LocalDateTime.MAX;
 
                     return ldt2.compareTo(ldt1);
                 });
@@ -171,14 +224,14 @@ public class ViewFeedFragment extends Fragment {
                 if(o1.getDate() != null)
                     zdt1 = ZonedDateTime.parse(o1.getDate(), formatter);
                 else
-                    zdt1 = ZonedDateTime.now();
+                    zdt1 = Instant.ofEpochMilli(Long.MAX_VALUE).atZone(ZoneId.of("UTC"));
                 ZonedDateTime instantInUTC1 = zdt1.withZoneSameInstant(ZoneId.of("UTC"));
 
                 ZonedDateTime zdt2;
                 if(o2.getDate() != null)
                     zdt2 = ZonedDateTime.parse(o2.getDate(), formatter);
                 else
-                    zdt2 = ZonedDateTime.now();
+                    zdt2 = Instant.ofEpochMilli(Long.MAX_VALUE).atZone(ZoneId.of("UTC"));
                 ZonedDateTime instantInUTC2 = zdt2.withZoneSameInstant(ZoneId.of("UTC"));
 
                 return instantInUTC2.compareTo(instantInUTC1);
