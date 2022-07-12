@@ -5,6 +5,7 @@ public class Entry
     private String title = "";
     private String link;
     private String date;
+    private String description;
     private Feed feed;
 
     public Entry() {}
@@ -16,6 +17,10 @@ public class Entry
     public void setDate(String newDate) { date = newDate; }
 
     public void setFeed(Feed feed) { this.feed = feed; }
+
+    public void setDescription(String description) { this.description = description; }
+
+    public String getDescription() { return description; }
 
     public String getTitle() { return title; }
 

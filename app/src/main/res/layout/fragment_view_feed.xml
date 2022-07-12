@@ -10,12 +10,14 @@
         android:layout_height="wrap_content"
         android:id="@+id/refresh_layout">
 
-        <ListView
+        <ExpandableListView
             android:id="@+id/feed_entries_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:divider="@color/gray"
-            android:dividerHeight="2dp"/>
+            android:dividerHeight="2dp"
+            android:groupIndicator="@null"
+            android:childDivider="@color/transparent"/>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

@@ -16,6 +16,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ExpandableListView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -226,17 +228,21 @@ public class ViewFeedFragment extends Fragment {
             DateTimeFormatter formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
             Collections.sort(entries, (o1, o2) -> {
                 ZonedDateTime zdt1;
-                if(o1.getDate() != null)
+                try {
                     zdt1 = ZonedDateTime.parse(o1.getDate(), formatter);
-                else
+                }
+                catch(Exception exception) {
                     zdt1 = Instant.ofEpochMilli(Long.MAX_VALUE).atZone(ZoneId.of("UTC"));
+                }
                 ZonedDateTime instantInUTC1 = zdt1.withZoneSameInstant(ZoneId.of("UTC"));
 
                 ZonedDateTime zdt2;
-                if(o2.getDate() != null)
+                try {
                     zdt2 = ZonedDateTime.parse(o2.getDate(), formatter);
-                else
+                }
+                catch(Exception exception) {
                     zdt2 = Instant.ofEpochMilli(Long.MAX_VALUE).atZone(ZoneId.of("UTC"));
+                }
                 ZonedDateTime instantInUTC2 = zdt2.withZoneSameInstant(ZoneId.of("UTC"));
 
                 return instantInUTC2.compareTo(instantInUTC1);
@@ -244,27 +250,19 @@ public class ViewFeedFragment extends Fragment {
 
             for(Entry e : entries)
             {
-                if(e.getDate() != null) {
+                try {
                     ZonedDateTime zdt1 = ZonedDateTime.parse(e.getDate(), formatter);
                     ZonedDateTime local = zdt1.withZoneSameInstant(ZoneId.systemDefault());
                     e.setDate(local.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM,
                             FormatStyle.SHORT)));
                 }
-                else
-                    e.setDate("");
+                catch(Exception exception) { e.setDate(""); }
             }
 
             handler.post(() -> {
-                ListView listView = v.findViewById(R.id.feed_entries_list);
+                ExpandableListView listView = v.findViewById(R.id.feed_entries_list);
                 adapter = new EntryAdapter(entries, getContext());
                 listView.setAdapter(adapter);
-
-                listView.setOnItemClickListener((adapterView, view, i, l) -> {
-                    try {
-                        startActivity(new Intent(Intent.ACTION_VIEW,
-                                Uri.parse(entries.get(i).getLink())));
-                    } catch(Exception e) { e.printStackTrace(); }
-                });
             });
         });
     }

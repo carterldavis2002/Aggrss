@@ -1,5 +1,6 @@
 package edu.niu.z1891607.aggrss;
 
+import android.text.Html;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -19,7 +20,7 @@ public class SAXHandler extends DefaultHandler
     private int channelElementCount = 0;
     private boolean valid = true;
 
-    StringBuilder titleBuild, linkBuild, dateBuild;
+    StringBuilder titleBuild, linkBuild, dateBuild, descriptionBuild;
 
     public ArrayList<Entry> getEntries() { return entries; }
 
@@ -36,6 +37,7 @@ public class SAXHandler extends DefaultHandler
         titleBuild = new StringBuilder();
         linkBuild = new StringBuilder();
         dateBuild = new StringBuilder();
+        descriptionBuild = new StringBuilder();
 
         element = startElement;
         if (startElement.equals("item")) { currentEntry = new Entry(); }
@@ -51,13 +53,16 @@ public class SAXHandler extends DefaultHandler
             switch (endElement)
             {
                 case "title":
-                    currentEntry.setTitle(titleBuild.toString().trim());
+                    currentEntry.setTitle(Html.fromHtml(titleBuild.toString().trim()).toString());
                     break;
                 case "link":
                     currentEntry.setLink(linkBuild.toString().trim());
                     break;
                 case "pubDate":
                     currentEntry.setDate(dateBuild.toString().trim());
+                    break;
+                case "description":
+                    currentEntry.setDescription(descriptionBuild.toString().trim());
                     break;
             }
         }
@@ -72,22 +77,16 @@ public class SAXHandler extends DefaultHandler
             switch (element)
             {
                 case "title":
-                    for (int i = start; i < start + length; i++)
-                    {
-                        titleBuild.append(ch[i]);
-                    }
+                    for (int i = start; i < start + length; i++) titleBuild.append(ch[i]);
                     break;
                 case "link":
-                    for (int i = start; i < start + length; i++)
-                    {
-                        linkBuild.append(ch[i]);
-                    }
+                    for (int i = start; i < start + length; i++) linkBuild.append(ch[i]);
                     break;
                 case "pubDate":
-                    for (int i = start; i < start + length; i++)
-                    {
-                        dateBuild.append(ch[i]);
-                    }
+                    for (int i = start; i < start + length; i++) dateBuild.append(ch[i]);
+                    break;
+                case "description":
+                    for (int i = start; i < start + length; i++) descriptionBuild.append(ch[i]);
                     break;
             }
         }
