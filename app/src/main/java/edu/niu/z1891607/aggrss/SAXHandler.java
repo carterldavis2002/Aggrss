@@ -12,22 +12,35 @@ import org.xml.sax.helpers.DefaultHandler;
 public class SAXHandler extends DefaultHandler
 {
     private String element = "";
-    private Entry currentEntry;
+    private Entry currentEntry = null;
     private final ArrayList<Entry> entries = new ArrayList<>();
+
+    private int rssElementCount = 0;
+    private int channelElementCount = 0;
+    private boolean valid = true;
 
     StringBuilder titleBuild, linkBuild, dateBuild;
 
     public ArrayList<Entry> getEntries() { return entries; }
 
+    public boolean isValidRSS() { return valid && rssElementCount == 1
+            && channelElementCount == 1; }
+
     public void startElement(String uri, String localName, @NonNull String startElement,
                              Attributes attributes)
     {
+        if(startElement.equals("item") && channelElementCount != 1) valid = false;
+        if(startElement.equals("item") && currentEntry != null) valid = false;
+
         titleBuild = new StringBuilder();
         linkBuild = new StringBuilder();
         dateBuild = new StringBuilder();
 
         element = startElement;
         if (startElement.equals("item")) { currentEntry = new Entry(); }
+
+        if(startElement.equals("rss")) rssElementCount++;
+        if(startElement.equals("channel")) channelElementCount++;
     }
 
     public void endElement(String uri, String localName, @NonNull String endElement)
@@ -48,7 +61,7 @@ public class SAXHandler extends DefaultHandler
             }
         }
 
-        if (endElement.equals("item")) { entries.add(currentEntry); }
+        if (endElement.equals("item")) { entries.add(currentEntry); currentEntry = null; }
     }
 
     public void characters(char[] ch, int start, int length)

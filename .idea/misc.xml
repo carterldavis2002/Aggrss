@@ -9,6 +9,8 @@
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/activity_main.xml" value="0.2" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/add_feed_dialog.xml" value="0.264" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/appbar.xml" value="0.26510416666666664" />
+        <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/fetch_entries_dialog.xml" value="0.1" />
+        <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/fetch_error_dialog.xml" value="0.21846943138093203" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/fragment_add_feed.xml" value="0.26614583333333336" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/fragment_manage_feed.xml" value="0.26510416666666664" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/fragment_view_feed.xml" value="0.21875" />

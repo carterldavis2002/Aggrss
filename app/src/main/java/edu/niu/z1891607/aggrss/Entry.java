@@ -2,7 +2,7 @@ package edu.niu.z1891607.aggrss;
 
 public class Entry
 {
-    private String title;
+    private String title = "";
     private String link;
     private String date;
 

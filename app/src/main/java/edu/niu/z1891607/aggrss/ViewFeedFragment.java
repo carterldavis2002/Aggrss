@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -211,7 +212,9 @@ public class ViewFeedFragment extends Fragment {
                         SAXHandler saxHandler = new SAXHandler();
                         SAXParserFactory.newInstance().newSAXParser().parse(feed.getUrl(),
                                 saxHandler);
-                        entries.addAll(saxHandler.getEntries());
+
+                        if(saxHandler.isValidRSS())
+                            entries.addAll(saxHandler.getEntries());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -253,9 +256,12 @@ public class ViewFeedFragment extends Fragment {
                 ListView listView = v.findViewById(R.id.feed_entries_list);
                 adapter = new EntryAdapter(entries, getContext());
                 listView.setAdapter(adapter);
+
                 listView.setOnItemClickListener((adapterView, view, i, l) -> {
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            Uri.parse(entries.get(i).getLink())));
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW,
+                                Uri.parse(entries.get(i).getLink())));
+                    } catch(Exception e) { e.printStackTrace(); }
                 });
             });
         });
