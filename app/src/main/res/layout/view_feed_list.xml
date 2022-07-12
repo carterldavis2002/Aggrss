@@ -9,7 +9,7 @@
     android:paddingTop="16dp">
 
     <TextView
-        android:id="@+id/name_tv"
+        android:id="@+id/entry_title_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textStyle="bold"/>
@@ -19,5 +19,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textStyle="italic"/>
+
+    <TextView
+        android:id="@+id/feed_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="italic"
+        android:gravity="end" />
 
 </LinearLayout>

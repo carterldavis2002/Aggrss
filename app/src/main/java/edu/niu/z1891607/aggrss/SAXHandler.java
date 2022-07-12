@@ -31,6 +31,7 @@ public class SAXHandler extends DefaultHandler
     {
         if(startElement.equals("item") && channelElementCount != 1) valid = false;
         if(startElement.equals("item") && currentEntry != null) valid = false;
+        if(startElement.equals("channel") && rssElementCount != 1) valid = false;
 
         titleBuild = new StringBuilder();
         linkBuild = new StringBuilder();

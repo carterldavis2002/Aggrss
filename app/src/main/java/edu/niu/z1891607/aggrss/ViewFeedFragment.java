@@ -213,8 +213,10 @@ public class ViewFeedFragment extends Fragment {
                         SAXParserFactory.newInstance().newSAXParser().parse(feed.getUrl(),
                                 saxHandler);
 
-                        if(saxHandler.isValidRSS())
+                        if(saxHandler.isValidRSS()) {
+                            for(Entry e : saxHandler.getEntries()) e.setFeed(feed);
                             entries.addAll(saxHandler.getEntries());
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

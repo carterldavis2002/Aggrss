@@ -48,11 +48,14 @@ public class EntryAdapter extends BaseAdapter
 
         Entry currentEntry = (Entry) getItem(pos);
 
-        TextView nameTV = convert.findViewById(R.id.name_tv);
+        TextView nameTV = convert.findViewById(R.id.entry_title_tv);
         nameTV.setText(currentEntry.getTitle());
 
         TextView dateTV = convert.findViewById(R.id.date_tv);
         dateTV.setText(currentEntry.getDate());
+
+        TextView feedTV = convert.findViewById(R.id.feed_tv);
+        feedTV.setText(currentEntry.getFeed().getTitle());
 
         return convert;
     }

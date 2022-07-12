@@ -5,6 +5,7 @@ public class Entry
     private String title = "";
     private String link;
     private String date;
+    private Feed feed;
 
     public Entry() {}
 
@@ -14,10 +15,14 @@ public class Entry
 
     public void setDate(String newDate) { date = newDate; }
 
+    public void setFeed(Feed feed) { this.feed = feed; }
+
     public String getTitle() { return title; }
 
     public String getLink() { return link; }
 
     public String getDate() { return date; }
+
+    public Feed getFeed() { return feed; }
 }
 
