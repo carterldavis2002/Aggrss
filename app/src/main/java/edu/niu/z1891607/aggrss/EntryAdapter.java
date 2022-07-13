@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -82,6 +83,7 @@ public class EntryAdapter extends BaseExpandableListAdapter
 
         TextView descriptionTV = convert.findViewById(R.id.description_tv);
         descriptionTV.setText(Html.fromHtml(currentEntry.getDescription()));
+        descriptionTV.setMovementMethod(LinkMovementMethod.getInstance());
 
         Button openBtn = convert.findViewById(R.id.open_btn);
         openBtn.setOnClickListener((v) -> {

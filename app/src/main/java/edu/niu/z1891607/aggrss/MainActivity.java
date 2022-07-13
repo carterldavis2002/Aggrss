@@ -14,8 +14,6 @@ import android.util.Log;
 import android.view.MenuItem;
 
 import com.google.android.material.navigation.NavigationView;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -24,10 +22,7 @@ import java.util.Objects;
 import javax.xml.parsers.SAXParserFactory;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, FeedCommunication {
-
-    private ArrayList<Feed> feeds = new ArrayList<>();
-
+        implements NavigationView.OnNavigationItemSelectedListener {
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle actionBarDrawerToggle;
 
@@ -35,14 +30,6 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String json = sharedPrefs.getString("FEEDS", "");
-        Type type = new TypeToken<ArrayList<Feed>>() {}.getType();
-        Gson gson = new Gson();
-
-        if(!json.equals(""))
-            feeds = gson.fromJson(json, type);
 
         drawerLayout = findViewById(R.id.drawer_layout);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout,
@@ -85,8 +72,4 @@ public class MainActivity extends AppCompatActivity
         drawerLayout.closeDrawers();
         return true;
     }
-
-    public void setFeedsArray(ArrayList<Feed> arr) { feeds = arr; }
-
-    public ArrayList<Feed> getFeedsArray(){ return feeds; }
 }

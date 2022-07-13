@@ -47,9 +47,11 @@ import javax.xml.parsers.SAXParserFactory;
 public class ViewFeedFragment extends Fragment {
     private final Executor executor = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private FeedCommunication mCallback;
+    private DatabaseManager dbManager;
     private ArrayList<Entry> entries;
     private final ArrayList<Entry> removedEntries = new ArrayList<>();
+
+    private ExpandableListView listView;
     private EntryAdapter adapter;
 
     public ViewFeedFragment() {}
@@ -57,11 +59,7 @@ public class ViewFeedFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        try {
-            mCallback = (FeedCommunication) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context + " must implement FeedCommunication");
-        }
+        dbManager = new DatabaseManager(getContext());
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -132,6 +130,8 @@ public class ViewFeedFragment extends Fragment {
             builder.setView(inflated);
 
             builder.setPositiveButton("Search", (dialog, i) -> {
+                for(int j = 0;j < adapter.getGroupCount();j++) listView.collapseGroup(j);
+
                 String searchTerm = titleET.getText().toString().toLowerCase().trim();
 
                 DateTimeFormatter formatter = DateTimeFormatter
@@ -207,7 +207,7 @@ public class ViewFeedFragment extends Fragment {
     private void getAndDisplayEntries(View v) {
         executor.execute(() -> {
             entries = new ArrayList<>();
-            for(Feed feed : mCallback.getFeedsArray())
+            for(Feed feed : dbManager.selectAllFeeds())
             {
                 if(feed.isEnabled()) {
                     try {
@@ -260,7 +260,7 @@ public class ViewFeedFragment extends Fragment {
             }
 
             handler.post(() -> {
-                ExpandableListView listView = v.findViewById(R.id.feed_entries_list);
+                listView = v.findViewById(R.id.feed_entries_list);
                 adapter = new EntryAdapter(entries, getContext());
                 listView.setAdapter(adapter);
             });

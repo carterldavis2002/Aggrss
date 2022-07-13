@@ -16,11 +16,11 @@ public class ManageAdapter extends BaseAdapter
 {
     private final ArrayList<Feed> feeds;
     private final Context context;
-    private final ManageFeedFragment.FeedSave save;
+    private final DatabaseManager dbManager;
 
-    public ManageAdapter(ArrayList<Feed> feeds, Context context, ManageFeedFragment.FeedSave save)
+    public ManageAdapter(ArrayList<Feed> feeds, Context context)
     {
-        this.save = save;
+        this.dbManager = new DatabaseManager(context);
         this.feeds = feeds;
         this.context = context;
     }
@@ -61,8 +61,8 @@ public class ManageAdapter extends BaseAdapter
 
         ImageButton deleteBtn = convert.findViewById(R.id.delete_btn);
         deleteBtn.setOnClickListener(v -> {
+            dbManager.deleteFeedById(feeds.get(pos).getId());
             feeds.remove(pos);
-            save.saveFeeds();
             notifyDataSetChanged();
         });
 

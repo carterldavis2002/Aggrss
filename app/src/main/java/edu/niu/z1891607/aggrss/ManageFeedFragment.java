@@ -23,7 +23,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -35,7 +34,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 public class ManageFeedFragment extends Fragment {
     private ArrayList<Feed> feeds;
-    private FeedCommunication mCallback;
+    private DatabaseManager dbManager;
     private final Executor executor = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -44,20 +43,16 @@ public class ManageFeedFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        try {
-            mCallback = (FeedCommunication) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context + " must implement FeedCommunication");
-        }
+        dbManager = new DatabaseManager(getContext());
     }
 
     public void onViewCreated(@NonNull View v, Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
 
-        feeds = mCallback.getFeedsArray();
+        feeds = dbManager.selectAllFeeds();
 
         ListView listView = v.findViewById(R.id.feed_list);
-        ManageAdapter adapter = new ManageAdapter(feeds, getContext(), this::saveFeeds);
+        ManageAdapter adapter = new ManageAdapter(feeds, getContext());
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener((parent, view, pos, id) -> {
@@ -71,8 +66,9 @@ public class ManageFeedFragment extends Fragment {
             else
                 view.setBackgroundColor(getResources().getColor(R.color.transparent));
 
-            ((Feed) parent.getAdapter().getItem(pos)).toggleEnabled();
-            saveFeeds();
+            Feed selectedFeed = ((Feed) parent.getAdapter().getItem(pos));
+            selectedFeed.toggleEnabled();
+            dbManager.updateFeedById(selectedFeed.getId(), selectedFeed.isEnabled());
         });
 
         FloatingActionButton fab = v.findViewById(R.id.fab_add);
@@ -97,7 +93,8 @@ public class ManageFeedFragment extends Fragment {
 
                 AlertDialog fetchDialog = fetchBuilder.show();
 
-                Feed newFeed = new Feed(titleET.getText().toString(), urlET.getText().toString());
+                Feed newFeed = new Feed(titleET.getText().toString(),
+                        urlET.getText().toString());
                 executor.execute(() -> {
                     final AtomicBoolean atomicError = new AtomicBoolean(false);
 
@@ -126,8 +123,8 @@ public class ManageFeedFragment extends Fragment {
                             errorBuilder.show();
                         }
                         else {
+                            dbManager.insertFeed(newFeed);
                             feeds.add(newFeed);
-                            saveFeeds();
 
                             adapter.notifyDataSetChanged();
                         }
@@ -139,17 +136,5 @@ public class ManageFeedFragment extends Fragment {
 
             builder.show();
         });
-    }
-
-    public interface FeedSave { void saveFeeds(); }
-
-    public void saveFeeds() {
-        mCallback.setFeedsArray(feeds);
-
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        SharedPreferences.Editor editor = sharedPrefs.edit();
-        Gson gson = new Gson();
-        editor.putString("FEEDS", gson.toJson(feeds));
-        editor.apply();
     }
 }
