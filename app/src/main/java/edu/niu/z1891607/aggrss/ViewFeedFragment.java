@@ -3,10 +3,12 @@ package edu.niu.z1891607.aggrss;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -236,6 +238,9 @@ public class ViewFeedFragment extends Fragment {
     }
 
     private void sortEntriesByDateTime(DateTimeFormatter formatter) {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        boolean descending = pref.getString("SORT_OPTION", "Newest").equals("Newest");
+
         Collections.sort(entries, (o1, o2) -> {
             LocalDateTime ldt1;
             if(!o1.getDate().equals(""))
@@ -249,7 +254,7 @@ public class ViewFeedFragment extends Fragment {
             else
                 ldt2 = LocalDateTime.MAX;
 
-            return ldt2.compareTo(ldt1);
+            return descending ? ldt2.compareTo(ldt1) : ldt1.compareTo(ldt2);
         });
     }
 }

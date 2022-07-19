@@ -58,5 +58,27 @@ public class SettingsFragment extends Fragment {
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {}
         });
+
+        Spinner sortDropdown = view.findViewById(R.id.sort_dropdown);
+        String[] sortOptions = {"Newest", "Oldest"};
+
+        sortDropdown.setAdapter(new ArrayAdapter<>(getContext(),
+                com.google.android.material.R.layout.support_simple_spinner_dropdown_item,
+                sortOptions));
+
+        final String[] currentSortOption = {pref.getString("SORT_OPTION", sortOptions[0])};
+        sortDropdown
+                .setSelection(java.util.Arrays.asList(sortOptions).indexOf(currentSortOption[0]));
+        sortDropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                SharedPreferences.Editor editor = pref.edit();
+                editor.putString("SORT_OPTION", sortOptions[i]);
+                editor.apply();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {}
+        });
     }
 }
