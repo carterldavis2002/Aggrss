@@ -30,8 +30,10 @@ public class DatabaseManager extends SQLiteOpenHelper {
     public void insertFeed(Feed feed) {
         SQLiteDatabase db = getWritableDatabase();
         int feedEnabled = feed.isEnabled() ? 1 : 0;
+        String feedTitle = feed.getTitle().replace("'", "''");
+        String feedUrl = feed.getUrl().replace("'", "''");
         db.execSQL("insert into " + FEED_TABLE + " values(null, '"
-                + feed.getTitle() + "', '" + feed.getUrl() + "', '" + feedEnabled + "')");
+                + feedTitle + "', '" + feedUrl + "', '" + feedEnabled + "')");
 
         String query = "select *  from " + FEED_TABLE;
         Cursor cursor = db.rawQuery(query, null);

@@ -177,21 +177,7 @@ public class ViewFeedFragment extends Fragment {
                     }
                 }
 
-                Collections.sort(entries, (o1, o2) -> {
-                    LocalDateTime ldt1;
-                    if(!o1.getDate().equals(""))
-                        ldt1 = LocalDateTime.parse(o1.getDate(), formatter);
-                    else
-                        ldt1 = LocalDateTime.MAX;
-
-                    LocalDateTime ldt2;
-                    if(!o2.getDate().equals(""))
-                        ldt2 = LocalDateTime.parse(o2.getDate(), formatter);
-                    else
-                        ldt2 = LocalDateTime.MAX;
-
-                    return ldt2.compareTo(ldt1);
-                });
+                sortEntriesByDateTime(formatter);
             });
 
             builder.setNegativeButton("Cancel", (dialog, i) -> dialog.cancel());
@@ -225,45 +211,45 @@ public class ViewFeedFragment extends Fragment {
                 }
             }
 
-            DateTimeFormatter formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
-            Collections.sort(entries, (o1, o2) -> {
-                ZonedDateTime zdt1;
-                try {
-                    zdt1 = ZonedDateTime.parse(o1.getDate(), formatter);
-                }
-                catch(Exception exception) {
-                    zdt1 = Instant.ofEpochMilli(Long.MAX_VALUE).atZone(ZoneId.of("UTC"));
-                }
-                ZonedDateTime instantInUTC1 = zdt1.withZoneSameInstant(ZoneId.of("UTC"));
-
-                ZonedDateTime zdt2;
-                try {
-                    zdt2 = ZonedDateTime.parse(o2.getDate(), formatter);
-                }
-                catch(Exception exception) {
-                    zdt2 = Instant.ofEpochMilli(Long.MAX_VALUE).atZone(ZoneId.of("UTC"));
-                }
-                ZonedDateTime instantInUTC2 = zdt2.withZoneSameInstant(ZoneId.of("UTC"));
-
-                return instantInUTC2.compareTo(instantInUTC1);
-            });
-
+            DateTimeFormatter rfc1123Formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
+            DateTimeFormatter localizedFormatter = DateTimeFormatter.ofLocalizedDateTime(
+                    FormatStyle.MEDIUM, FormatStyle.SHORT);
             for(Entry e : entries)
             {
                 try {
-                    ZonedDateTime zdt1 = ZonedDateTime.parse(e.getDate(), formatter);
-                    ZonedDateTime local = zdt1.withZoneSameInstant(ZoneId.systemDefault());
-                    e.setDate(local.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM,
-                            FormatStyle.SHORT)));
+                    ZonedDateTime zdt = ZonedDateTime.parse(e.getDate(), rfc1123Formatter);
+                    ZonedDateTime local = zdt.withZoneSameInstant(ZoneId.systemDefault());
+                    e.setDate(local.format(localizedFormatter));
                 }
                 catch(Exception exception) { e.setDate(""); }
             }
+
+
+            sortEntriesByDateTime(localizedFormatter);
 
             handler.post(() -> {
                 listView = v.findViewById(R.id.feed_entries_list);
                 adapter = new EntryAdapter(entries, getContext());
                 listView.setAdapter(adapter);
             });
+        });
+    }
+
+    private void sortEntriesByDateTime(DateTimeFormatter formatter) {
+        Collections.sort(entries, (o1, o2) -> {
+            LocalDateTime ldt1;
+            if(!o1.getDate().equals(""))
+                ldt1 = LocalDateTime.parse(o1.getDate(), formatter);
+            else
+                ldt1 = LocalDateTime.MAX;
+
+            LocalDateTime ldt2;
+            if(!o2.getDate().equals(""))
+                ldt2 = LocalDateTime.parse(o2.getDate(), formatter);
+            else
+                ldt2 = LocalDateTime.MAX;
+
+            return ldt2.compareTo(ldt1);
         });
     }
 }

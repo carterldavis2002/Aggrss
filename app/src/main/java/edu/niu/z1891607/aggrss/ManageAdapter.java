@@ -49,7 +49,7 @@ public class ManageAdapter extends BaseAdapter
         Feed currentFeed = (Feed) getItem(pos);
 
         if(currentFeed.isEnabled())
-            convert.setBackgroundColor(context.getResources().getColor(R.color.green));
+            convert.setBackgroundColor(context.getResources().getColor(R.color.green_500));
         else
             convert.setBackgroundColor(context.getResources().getColor(R.color.transparent));
 

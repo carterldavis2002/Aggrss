@@ -1,12 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item
-        android:id="@+id/nav_view"
-        android:title="View Feeds"
-        android:checked="true"/>
+    <group android:id="@+id/feeds_group">
+        <item
+            android:id="@+id/nav_view"
+            android:title="View Feeds"
+            android:checked="true"/>
 
-    <item
-        android:id="@+id/nav_manage"
-        android:title="Manage Feeds" />
+        <item
+            android:id="@+id/nav_manage"
+            android:title="Manage Feeds" />
+
+    </group>
+
+    <group android:id="@+id/settings_group">
+        <item
+            android:id="@+id/nav_settings"
+            android:title="Settings" />
+    </group>
 </menu>

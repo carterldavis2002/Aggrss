@@ -61,7 +61,7 @@ public class ManageFeedFragment extends Fragment {
 
             if(Integer.toHexString(ContextCompat.getColor(requireContext(), R.color.transparent))
                     .equals(Integer.toHexString(currentId))) {
-                view.setBackgroundColor(getResources().getColor(R.color.green));
+                view.setBackgroundColor(getResources().getColor(R.color.green_500));
             }
             else
                 view.setBackgroundColor(getResources().getColor(R.color.transparent));

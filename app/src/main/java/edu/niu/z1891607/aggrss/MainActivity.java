@@ -3,6 +3,7 @@ package edu.niu.z1891607.aggrss;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -11,6 +12,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import com.google.android.material.navigation.NavigationView;
@@ -31,6 +34,10 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        AppCompatDelegate.setDefaultNightMode(pref.getInt("THEME_MODE",
+                AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM));
+
         drawerLayout = findViewById(R.id.drawer_layout);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout,
                 R.string.nav_open, R.string.nav_close);
@@ -43,9 +50,8 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        ViewFeedFragment fragment = new ViewFeedFragment();
-        fragmentManager.beginTransaction().replace(R.id.frame_layout, fragment).commit();
+        Menu navMenu = navigationView.getMenu();
+        onNavigationItemSelected(navMenu.findItem(R.id.nav_view));
     }
 
     @Override
@@ -56,10 +62,13 @@ public class MainActivity extends AppCompatActivity
 
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         Fragment fragment;
-        if(menuItem.getItemId() == R.id.nav_manage)
+        int id = menuItem.getItemId();
+        if(id == R.id.nav_manage)
             fragment = new ManageFeedFragment();
-        else
+        else if(id == R.id.nav_view)
             fragment = new ViewFeedFragment();
+        else
+            fragment = new SettingsFragment();
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.frame_layout, fragment).commit();
