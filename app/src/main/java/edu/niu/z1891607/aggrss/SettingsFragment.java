@@ -5,10 +5,14 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -79,6 +83,29 @@ public class SettingsFragment extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {}
+        });
+
+        EditText maxET = view.findViewById(R.id.max_entries_et);
+        int currentMax = pref.getInt("MAX_ENTRIES", 50);
+        maxET.setText(String.valueOf(currentMax));
+        maxET.setOnFocusChangeListener((view1, hasFocus) -> {
+            Log.w("MA", "" + hasFocus);
+            if(hasFocus) return;
+
+            try {
+                SharedPreferences.Editor editor = pref.edit();
+                editor.putInt("MAX_ENTRIES", Integer.parseInt(((EditText) view1)
+                        .getText().toString()));
+                editor.apply();
+            } catch (Exception e) {
+                ((EditText) view1).setText(String.valueOf(currentMax));
+            }
+        });
+        maxET.setOnEditorActionListener((v, actionId, event) -> {
+            if(actionId == EditorInfo.IME_ACTION_DONE){
+                maxET.clearFocus();
+            }
+            return false;
         });
     }
 }

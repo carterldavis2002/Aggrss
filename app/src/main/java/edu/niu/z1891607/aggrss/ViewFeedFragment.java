@@ -52,6 +52,7 @@ public class ViewFeedFragment extends Fragment {
     private DatabaseManager dbManager;
     private ArrayList<Entry> entries;
     private final ArrayList<Entry> removedEntries = new ArrayList<>();
+    private boolean descending;
 
     private ExpandableListView listView;
     private EntryAdapter adapter;
@@ -73,6 +74,9 @@ public class ViewFeedFragment extends Fragment {
 
     public void onViewCreated(@NonNull View v, Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
+
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        descending = pref.getString("SORT_OPTION", "Newest").equals("Newest");
 
         SwipeRefreshLayout refreshLayout = v.findViewById(R.id.refresh_layout);
         refreshLayout.setOnRefreshListener(() -> {
@@ -179,7 +183,7 @@ public class ViewFeedFragment extends Fragment {
                     }
                 }
 
-                sortEntriesByDateTime(formatter);
+                sortEntriesByDateTime(formatter, entries, descending);
             });
 
             builder.setNegativeButton("Cancel", (dialog, i) -> dialog.cancel());
@@ -194,6 +198,10 @@ public class ViewFeedFragment extends Fragment {
 
     private void getAndDisplayEntries(View v) {
         executor.execute(() -> {
+            DateTimeFormatter rfc1123Formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
+            DateTimeFormatter localizedFormatter = DateTimeFormatter.ofLocalizedDateTime(
+                    FormatStyle.MEDIUM, FormatStyle.SHORT);
+
             entries = new ArrayList<>();
             for(Feed feed : dbManager.selectAllFeeds())
             {
@@ -204,8 +212,29 @@ public class ViewFeedFragment extends Fragment {
                                 saxHandler);
 
                         if(saxHandler.isValidRSS()) {
-                            for(Entry e : saxHandler.getEntries()) e.setFeed(feed);
-                            entries.addAll(saxHandler.getEntries());
+                            ArrayList<Entry> retrievedEntries = saxHandler.getEntries();
+                            for(Entry e : retrievedEntries) {
+                                e.setFeed(feed);
+
+                                try {
+                                    ZonedDateTime zdt = ZonedDateTime.parse(e.getDate(),
+                                            rfc1123Formatter);
+                                    ZonedDateTime local = zdt.withZoneSameInstant(
+                                            ZoneId.systemDefault());
+                                    e.setDate(local.format(localizedFormatter));
+                                }
+                                catch(Exception exception) { e.setDate(""); }
+                            }
+                            sortEntriesByDateTime(localizedFormatter, retrievedEntries,
+                                    true);
+
+                            SharedPreferences pref = PreferenceManager
+                                    .getDefaultSharedPreferences(getContext());
+                            int maxEntries = pref.getInt("MAX_ENTRIES", 50);
+                            while(retrievedEntries.size() > maxEntries)
+                                retrievedEntries.remove(retrievedEntries.size() - 1);
+
+                            entries.addAll(retrievedEntries);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -213,21 +242,7 @@ public class ViewFeedFragment extends Fragment {
                 }
             }
 
-            DateTimeFormatter rfc1123Formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
-            DateTimeFormatter localizedFormatter = DateTimeFormatter.ofLocalizedDateTime(
-                    FormatStyle.MEDIUM, FormatStyle.SHORT);
-            for(Entry e : entries)
-            {
-                try {
-                    ZonedDateTime zdt = ZonedDateTime.parse(e.getDate(), rfc1123Formatter);
-                    ZonedDateTime local = zdt.withZoneSameInstant(ZoneId.systemDefault());
-                    e.setDate(local.format(localizedFormatter));
-                }
-                catch(Exception exception) { e.setDate(""); }
-            }
-
-
-            sortEntriesByDateTime(localizedFormatter);
+            sortEntriesByDateTime(localizedFormatter, entries, descending);
 
             handler.post(() -> {
                 listView = v.findViewById(R.id.feed_entries_list);
@@ -237,11 +252,10 @@ public class ViewFeedFragment extends Fragment {
         });
     }
 
-    private void sortEntriesByDateTime(DateTimeFormatter formatter) {
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
-        boolean descending = pref.getString("SORT_OPTION", "Newest").equals("Newest");
+    private void sortEntriesByDateTime(DateTimeFormatter formatter, ArrayList<Entry> entryArr,
+                                       boolean descending) {
 
-        Collections.sort(entries, (o1, o2) -> {
+        Collections.sort(entryArr, (o1, o2) -> {
             LocalDateTime ldt1;
             if(!o1.getDate().equals(""))
                 ldt1 = LocalDateTime.parse(o1.getDate(), formatter);
