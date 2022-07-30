@@ -4,25 +4,26 @@
     android:layout_height="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:padding="20dp">
+    android:padding="@dimen/dialog_padding">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Title"/>
+        android:text="@string/entry_title_input_label"/>
 
     <EditText
         android:id="@+id/entry_title_et"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter title search term"
+        android:hint="@string/entry_title_input_hint"
         android:importantForAutofill="no"
-        android:inputType="text"/>
+        android:inputType="text"
+        android:minHeight="48dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Date Range"
+        android:text="@string/entry_date_input_label"
         android:layout_gravity="center_horizontal"/>
 
     <Button
@@ -30,13 +31,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:text="Choose dates"/>
+        android:text="@string/entry_date_input_button_label"
+        android:textColor="?attr/colorOnSecondary" />
 
     <TextView
         android:id="@+id/chosen_dates_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:text="Choose dates:"/>
+        android:text="@string/selected_date_range_label"/>
 
 </LinearLayout>

@@ -1,5 +1,40 @@
 <resources>
     <string name="app_name">AggRSS</string>
+
     <string name="nav_open">Open</string>
     <string name="nav_close">Close</string>
+
+    <string name="feed_title_input_label">Title</string>
+    <string name="feed_title_input_hint">Enter a title for this feed</string>
+
+    <string name="feed_url_input_label">URL</string>
+    <string name="feed_url_input_hint">Enter the URL for the feed</string>
+
+    <string name="fetching_progress_label">Fetching feed entries…</string>
+
+    <string name="error_img_description">Error</string>
+    <string name="error_description">Error while fetching feed entries; Feed not added</string>
+
+    <string name="fab_add_description">Add a new RSS feed</string>
+
+    <string name="settings_theme_label">Theme</string>
+    <string name="settings_sorting_label">Sort feed entries by</string>
+    <string name="settings_max_label">Max entries per feed</string>
+
+    <string name="settings_max_input_hint">Enter a number</string>
+
+    <string name="settings_theme_dropdown_description">Select an app theme</string>
+    <string name="settings_sorting_dropdown_description">Select preferred sorting method</string>
+
+    <string name="delete_img_description">Remove this feed</string>
+
+    <string name="entry_title_input_label">Title</string>
+    <string name="entry_title_input_hint">Enter title search term</string>
+
+    <string name="entry_date_input_label">Date Range</string>
+    <string name="entry_date_input_button_label">Choose dates</string>
+
+    <string name="selected_date_range_label">Chosen dates:</string>
+
+    <string name="open_entry_button_label">Open in browser</string>
 </resources>

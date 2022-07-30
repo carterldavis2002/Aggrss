@@ -17,6 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:text="Open in browser" />
+        android:text="@string/open_entry_button_label"
+        android:textColor="?attr/colorOnSecondary"/>
 
 </LinearLayout>
