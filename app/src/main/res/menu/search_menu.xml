@@ -6,7 +6,7 @@
         android:id="@+id/search_item"
         android:icon="@drawable/ic_baseline_search_24"
         app:showAsAction="ifRoom|withText"
-        android:title="Search">
+        android:title="@string/search_action_title">
     </item>
 
 </menu>

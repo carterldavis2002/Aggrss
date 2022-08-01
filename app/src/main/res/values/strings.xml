@@ -37,4 +37,31 @@
     <string name="selected_date_range_label">Chosen dates:</string>
 
     <string name="open_entry_button_label">Open in browser</string>
+
+    <string name="nav_view_label">View Feeds</string>
+    <string name="nav_manage_label">Manage Feeds</string>
+    <string name="nav_settings_label">Settings</string>
+
+    <string name="search_action_title">Search</string>
+
+    <string name="add_dialog_title">Add a new RSS feed</string>
+    <string name="add_dialog_positive_btn">Add</string>
+    <string name="add_dialog_negative_btn">Cancel</string>
+
+    <string name="error_dialog_title">Fetch error</string>
+    <string name="error_dialog_positive_btn">OK</string>
+
+    <string name="theme_dropdown_system">System</string>
+    <string name="theme_dropdown_day">Day</string>
+    <string name="theme_dropdown_night">Night</string>
+
+    <string name="sort_dropdown_newest">Newest</string>
+    <string name="sort_dropdown_oldest">Oldest</string>
+
+    <string name="search_dialog_title">Search feed entries</string>
+    <string name="search_dialog_chosen_dates">Chosen dates: %1$s - %2$s</string>
+    <string name="search_dialog_positive_button">Search</string>
+    <string name="search_dialog_negative_button">Cancel</string>
+
+    <string name="date_picker_title">Select range of dates</string>
 </resources>

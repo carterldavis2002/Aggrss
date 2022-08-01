@@ -13,8 +13,6 @@ import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -24,16 +22,23 @@ import android.widget.EditText;
 
 import com.google.android.material.navigation.NavigationView;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Objects;
-
-import javax.xml.parsers.SAXParserFactory;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle actionBarDrawerToggle;
+
+    public static final String PREF_THEME_INT = "THEME_MODE";
+    public static final String PREF_SORT_OPTION;
+    public static final String PREF_MAX_ENTRIES;
+    public static final int PREF_MAX_ENTRIES_DEFAULT;
+
+    static {
+        PREF_SORT_OPTION = "SORT_OPTION";
+        PREF_MAX_ENTRIES = "MAX_ENTRIES";
+        PREF_MAX_ENTRIES_DEFAULT = 50;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +46,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-        AppCompatDelegate.setDefaultNightMode(pref.getInt("THEME_MODE",
+        AppCompatDelegate.setDefaultNightMode(pref.getInt(PREF_THEME_INT,
                 AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM));
 
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -80,16 +85,15 @@ public class MainActivity extends AppCompatActivity
         fragmentManager.beginTransaction().replace(R.id.frame_layout, fragment).commit();
 
         NavigationView navigationView = findViewById(R.id.nav_view);
-        for (int i = 0; i < navigationView.getMenu().size(); i++) {
+        for (int i = 0; i < navigationView.getMenu().size(); i++)
             navigationView.getMenu().getItem(i).setChecked(false);
-        }
         menuItem.setChecked(true);
         drawerLayout.closeDrawers();
         return true;
     }
 
     @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
+    public boolean dispatchTouchEvent(@NonNull MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             View v = getCurrentFocus();
             if (v instanceof EditText) {

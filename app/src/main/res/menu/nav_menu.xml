@@ -4,18 +4,18 @@
     <group android:id="@+id/feeds_group">
         <item
             android:id="@+id/nav_view"
-            android:title="View Feeds"
+            android:title="@string/nav_view_label"
             android:checked="true"/>
 
         <item
             android:id="@+id/nav_manage"
-            android:title="Manage Feeds" />
+            android:title="@string/nav_manage_label" />
 
     </group>
 
     <group android:id="@+id/settings_group">
         <item
             android:id="@+id/nav_settings"
-            android:title="Settings" />
+            android:title="@string/nav_settings_label" />
     </group>
 </menu>

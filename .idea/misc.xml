@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1585" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/drawable/dropdown_background.xml" value="0.108" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/drawable/ic_baseline_add_24.xml" value="0.1565" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/drawable/ic_baseline_delete_24.xml" value="0.1565" />
@@ -13,16 +14,16 @@
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/drawable/settings_selector.xml" value="0.1" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout-v21/activity_main.xml" value="0.26614583333333336" />
-        <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/activity_main.xml" value="0.2" />
-        <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/add_feed_dialog.xml" value="0.264" />
+        <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/activity_main.xml" value="0.21846943138093203" />
+        <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/add_feed_dialog.xml" value="0.21846943138093203" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/appbar.xml" value="0.26510416666666664" />
-        <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/fetch_entries_dialog.xml" value="0.264" />
+        <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/fetch_entries_dialog.xml" value="0.21846943138093203" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/fetch_error_dialog.xml" value="0.2" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/fragment_add_feed.xml" value="0.26614583333333336" />
-        <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/fragment_manage_feed.xml" value="0.1" />
+        <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/fragment_manage_feed.xml" value="0.21846943138093203" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/fragment_settings.xml" value="0.15503173164097914" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/fragment_view_feed.xml" value="0.1694915254237288" />
-        <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/manage_feed_list.xml" value="0.1" />
+        <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/manage_feed_list.xml" value="0.21846943138093203" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/search_entries_dialog.xml" value="0.4" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/view_feed_list.xml" value="0.2" />
         <entry key="..\:/Users/Carter/AndroidStudioProjects/AggRSS/app/src/main/res/layout/view_feed_list_group.xml" value="0.1885766092475068" />

@@ -36,14 +36,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.xml.parsers.SAXParserFactory;
 
 public class ViewFeedFragment extends Fragment {
-    private final Executor executor = Executors.newSingleThreadExecutor();
-    private final Handler handler = new Handler(Looper.getMainLooper());
     private DatabaseManager dbManager;
     private ArrayList<Entry> entries;
     private final ArrayList<Entry> removedEntries = new ArrayList<>();
@@ -52,12 +48,25 @@ public class ViewFeedFragment extends Fragment {
     private ExpandableListView listView;
     private EntryAdapter adapter;
 
+    private SharedPreferences pref;
+    private String PREF_MAX_ENTRIES;
+    private int PREF_MAX_ENTRIES_DEFAULT;
+
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private boolean chosenDates;
+
+    private View inflatedDialog;
+
+    private SwipeRefreshLayout refreshLayout;
+
     public ViewFeedFragment() {}
 
+    @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-
-        dbManager = new DatabaseManager(getContext());
+        dbManager = new DatabaseManager(context);
+        pref = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -69,18 +78,30 @@ public class ViewFeedFragment extends Fragment {
 
     public void onViewCreated(@NonNull View v, Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
+        refreshLayout = v.findViewById(R.id.refresh_layout);
+        listView = v.findViewById(R.id.feed_entries_list);
+    }
 
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
-        descending = pref.getString("SORT_OPTION", "Newest").equals("Newest");
+    @Override
+    public void onStart() {
+        super.onStart();
 
-        SwipeRefreshLayout refreshLayout = v.findViewById(R.id.refresh_layout);
+        String PREF_SORT_OPTION;
+        try {
+            PREF_SORT_OPTION = (String) requireActivity().getClass()
+                    .getField("PREF_SORT_OPTION").get(requireActivity());
+        } catch (Exception e) { PREF_SORT_OPTION = "SORT_OPTION"; }
+
+        descending = pref.getInt(PREF_SORT_OPTION, R.string.sort_dropdown_newest)
+                == R.string.sort_dropdown_newest;
+
         refreshLayout.setOnRefreshListener(() -> {
-            getAndDisplayEntries(v);
+            getAndDisplayEntries();
             removedEntries.clear();
             refreshLayout.setRefreshing(false);
         });
 
-        getAndDisplayEntries(v);
+        getAndDisplayEntries();
     }
 
     public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
@@ -92,45 +113,24 @@ public class ViewFeedFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if(item.getItemId() == R.id.search_item) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-            builder.setTitle("Search feed entries");
+            builder.setTitle(getString(R.string.search_dialog_title));
 
-            View inflated = LayoutInflater.from(getContext())
+            inflatedDialog = LayoutInflater.from(getContext())
                     .inflate(R.layout.search_entries_dialog, (ViewGroup) getView(),
                             false);
-            EditText titleET = inflated.findViewById(R.id.entry_title_et);
+            EditText titleET = inflatedDialog.findViewById(R.id.entry_title_et);
 
-            AtomicReference<LocalDateTime> startDate = new AtomicReference<>(LocalDateTime.MIN);
-            AtomicReference<LocalDateTime> endDate = new AtomicReference<>(LocalDateTime.MAX);
-            AtomicBoolean chosenDates = new AtomicBoolean(false);
+            startDate = LocalDateTime.MIN;
+            endDate = LocalDateTime.MAX;
+            chosenDates = false;
 
-            Button rangeBtn = inflated.findViewById(R.id.date_range_btn);
-            rangeBtn.setOnClickListener(v -> {
-                MaterialDatePicker<Pair<Long, Long>> rangePicker =
-                        MaterialDatePicker.Builder.dateRangePicker()
-                                .setTitleText("Select range of dates").build();
-                rangePicker.addOnPositiveButtonClickListener(selection -> {
-                    chosenDates.set(true);
+            Button rangeBtn = inflatedDialog.findViewById(R.id.date_range_btn);
+            rangeBtn.setOnClickListener(new DateRangeClickHandler());
 
-                    startDate.set(LocalDateTime.ofInstant(Instant.ofEpochMilli(selection.first),
-                                ZoneId.of("UTC")));
+            builder.setView(inflatedDialog);
 
-                    endDate.set(LocalDateTime.ofInstant(Instant.ofEpochMilli(selection.second),
-                                ZoneId.of("UTC")).plusDays(1));
-
-                    TextView selected = inflated.findViewById(R.id.chosen_dates_tv);
-                    DateTimeFormatter formatter =
-                            DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
-                    selected.setText("Chosen Dates: " + formatter.format(startDate.get()) + " - "
-                    + formatter.format(endDate.get().minusDays(1)));
-                });
-
-                rangePicker.show(requireActivity().getSupportFragmentManager(),
-                        "FILTER_PICKER");
-            });
-
-            builder.setView(inflated);
-
-            builder.setPositiveButton("Search", (dialog, i) -> {
+            builder.setPositiveButton(getString(R.string.search_dialog_positive_button),
+                    (dialog, i) -> {
                 for(int j = 0;j < adapter.getGroupCount();j++) listView.collapseGroup(j);
 
                 String searchTerm = titleET.getText().toString().toLowerCase().trim();
@@ -138,50 +138,14 @@ public class ViewFeedFragment extends Fragment {
                 DateTimeFormatter formatter = DateTimeFormatter
                         .ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT);
 
-                Iterator<Entry> it = entries.iterator();
-                while(it.hasNext())
-                {
-                    Entry e = it.next();
-
-                    LocalDateTime ldt;
-                    if(!e.getDate().equals(""))
-                        ldt = LocalDateTime.parse(e.getDate(), formatter);
-                    else
-                        ldt = LocalDateTime.MAX;
-
-                    if(!e.getTitle().toLowerCase().contains(searchTerm)
-                            || (!(ldt.compareTo(startDate.get()) >= 0) && chosenDates.get())
-                            || (!(ldt.compareTo(endDate.get()) < 0) && chosenDates.get())) {
-                        removedEntries.add(e);
-                        it.remove();
-                        adapter.notifyDataSetChanged();
-                    }
-                }
-
-                it = removedEntries.iterator();
-                while(it.hasNext())
-                {
-                    Entry e = it.next();
-
-                    LocalDateTime ldt;
-                    if(!e.getDate().equals(""))
-                        ldt = LocalDateTime.parse(e.getDate(), formatter);
-                    else
-                        ldt = LocalDateTime.MAX;
-
-                    if(e.getTitle().toLowerCase().contains(searchTerm)
-                            && ((ldt.compareTo(startDate.get()) >= 0)
-                            && (ldt.compareTo(endDate.get()) < 0) || !chosenDates.get())) {
-                        entries.add(e);
-                        it.remove();
-                        adapter.notifyDataSetChanged();
-                    }
-                }
+                filterEntriesByKeywordAndDate(searchTerm, formatter, false);
+                filterEntriesByKeywordAndDate(searchTerm, formatter, true);
 
                 sortEntriesByDateTime(formatter, entries, descending);
             });
 
-            builder.setNegativeButton("Cancel", (dialog, i) -> dialog.cancel());
+            builder.setNegativeButton(getString(R.string.search_dialog_negative_button),
+                    (dialog, i) -> dialog.cancel());
 
             builder.show();
 
@@ -191,65 +155,73 @@ public class ViewFeedFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-    private void getAndDisplayEntries(View v) {
-        executor.execute(() -> {
-            DateTimeFormatter rfc1123Formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
-            DateTimeFormatter localizedFormatter = DateTimeFormatter.ofLocalizedDateTime(
-                    FormatStyle.MEDIUM, FormatStyle.SHORT);
+    private void getAndDisplayEntries() {
+        entries = new ArrayList<>();
+        adapter = new EntryAdapter(entries, getContext());
+        listView.setAdapter(adapter);
 
-            entries = new ArrayList<>();
-            for(Feed feed : dbManager.selectAllFeeds())
-            {
+        for(Feed feed : dbManager.selectAllFeeds()) {
+            Executor executor = Executors.newSingleThreadExecutor();
+            Handler handler = new Handler(Looper.getMainLooper());
+            executor.execute(() -> {
+                SAXHandler saxHandler = new SAXHandler();
                 if(feed.isEnabled()) {
                     try {
-                        SAXHandler saxHandler = new SAXHandler();
                         SAXParserFactory.newInstance().newSAXParser().parse(feed.getUrl(),
                                 saxHandler);
-
-                        if(saxHandler.isValidRSS()) {
-                            ArrayList<Entry> retrievedEntries = saxHandler.getEntries();
-                            for(Entry e : retrievedEntries) {
-                                e.setFeed(feed);
-
-                                try {
-                                    ZonedDateTime zdt = ZonedDateTime.parse(e.getDate(),
-                                            rfc1123Formatter);
-                                    ZonedDateTime local = zdt.withZoneSameInstant(
-                                            ZoneId.systemDefault());
-                                    e.setDate(local.format(localizedFormatter));
-                                }
-                                catch(Exception exception) { e.setDate(""); }
-                            }
-                            sortEntriesByDateTime(localizedFormatter, retrievedEntries,
-                                    true);
-
-                            SharedPreferences pref = PreferenceManager
-                                    .getDefaultSharedPreferences(getContext());
-                            int maxEntries = pref.getInt("MAX_ENTRIES", 50);
-                            while(retrievedEntries.size() > maxEntries)
-                                retrievedEntries.remove(retrievedEntries.size() - 1);
-
-                            entries.addAll(retrievedEntries);
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    } catch (Exception e) { e.printStackTrace(); }
                 }
-            }
 
-            sortEntriesByDateTime(localizedFormatter, entries, descending);
+                handler.post(() -> {
+                    DateTimeFormatter rfc1123Formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
+                    DateTimeFormatter localizedFormatter = DateTimeFormatter.ofLocalizedDateTime(
+                            FormatStyle.MEDIUM, FormatStyle.SHORT);
 
-            handler.post(() -> {
-                listView = v.findViewById(R.id.feed_entries_list);
-                adapter = new EntryAdapter(entries, getContext());
-                listView.setAdapter(adapter);
+                    try {
+                        PREF_MAX_ENTRIES = (String) requireActivity().getClass()
+                                .getField("PREF_MAX_ENTRIES").get(requireActivity());
+                    } catch (Exception e) { PREF_MAX_ENTRIES = "MAX_ENTRIES"; }
+
+                    try {
+                        PREF_MAX_ENTRIES_DEFAULT = requireActivity().getClass()
+                                .getField("PREF_MAX_ENTRIES_DEFAULT")
+                                .getInt(requireActivity());
+                    } catch (Exception e) { PREF_MAX_ENTRIES_DEFAULT = 50; }
+
+                    if(saxHandler.isValidRSS()) {
+                        ArrayList<Entry> retrievedEntries = saxHandler.getEntries();
+                        for(Entry e : retrievedEntries) {
+                            e.setFeed(feed);
+
+                            try {
+                                ZonedDateTime zdt = ZonedDateTime.parse(e.getDate(),
+                                        rfc1123Formatter);
+                                ZonedDateTime local = zdt.withZoneSameInstant(
+                                        ZoneId.systemDefault());
+                                e.setDate(local.format(localizedFormatter));
+                            }
+                            catch(Exception exception) { e.setDate(""); }
+                        }
+
+                        sortEntriesByDateTime(localizedFormatter, retrievedEntries,
+                                true);
+
+                        int maxEntries = pref.getInt(PREF_MAX_ENTRIES,
+                                PREF_MAX_ENTRIES_DEFAULT);
+                        while(retrievedEntries.size() > maxEntries)
+                            retrievedEntries.remove(retrievedEntries.size() - 1);
+
+                        entries.addAll(retrievedEntries);
+                        sortEntriesByDateTime(localizedFormatter, entries, descending);
+                        adapter.notifyDataSetChanged();
+                    }
+                });
             });
-        });
+        }
     }
 
     private void sortEntriesByDateTime(DateTimeFormatter formatter, ArrayList<Entry> entryArr,
                                        boolean descending) {
-
         Collections.sort(entryArr, (o1, o2) -> {
             LocalDateTime ldt1;
             if(!o1.getDate().equals(""))
@@ -265,5 +237,68 @@ public class ViewFeedFragment extends Fragment {
 
             return descending ? ldt2.compareTo(ldt1) : ldt1.compareTo(ldt2);
         });
+    }
+
+    private void filterEntriesByKeywordAndDate(String searchTerm, DateTimeFormatter formatter,
+                                               boolean removed) {
+        Iterator<Entry> it;
+        if(!removed)
+            it = entries.iterator();
+        else
+            it = removedEntries.iterator();
+
+        while(it.hasNext()) {
+            Entry e = it.next();
+
+            LocalDateTime ldt;
+            if(!e.getDate().equals(""))
+                ldt = LocalDateTime.parse(e.getDate(), formatter);
+            else
+                ldt = LocalDateTime.MAX;
+
+            if(!removed && (!e.getTitle().toLowerCase().contains(searchTerm)
+                    || (!(ldt.compareTo(startDate) >= 0) && chosenDates)
+                    || (!(ldt.compareTo(endDate) < 0) && chosenDates))) {
+                removedEntries.add(e);
+
+                it.remove();
+                adapter.notifyDataSetChanged();
+            }
+            else if(removed && (e.getTitle().toLowerCase().contains(searchTerm)
+                    || ((ldt.compareTo(startDate) >= 0) && chosenDates)
+                    || ((ldt.compareTo(endDate) < 0) && chosenDates))) {
+                entries.add(e);
+
+                it.remove();
+                adapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+    private class DateRangeClickHandler implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            MaterialDatePicker<Pair<Long, Long>> rangePicker =
+                    MaterialDatePicker.Builder.dateRangePicker()
+                            .setTitleText(getString(R.string.date_picker_title)).build();
+            rangePicker.addOnPositiveButtonClickListener(selection -> {
+                chosenDates = true;
+
+                startDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(selection.first),
+                        ZoneId.of("UTC"));
+
+                endDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(selection.second),
+                        ZoneId.of("UTC")).plusDays(1);
+
+                TextView selected = inflatedDialog.findViewById(R.id.chosen_dates_tv);
+                DateTimeFormatter formatter =
+                        DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
+                selected.setText(getString(R.string.search_dialog_chosen_dates,
+                        formatter.format(startDate), formatter.format(endDate.minusDays(1))));
+            });
+
+            rangePicker.show(requireActivity().getSupportFragmentManager(),
+                    "FILTER_PICKER");
+        }
     }
 }

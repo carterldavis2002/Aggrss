@@ -1,7 +1,6 @@
 package edu.niu.z1891607.aggrss;
 
 import android.text.Html;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -18,21 +17,21 @@ public class SAXHandler extends DefaultHandler
 
     private int rssElementCount = 0;
     private int channelElementCount = 0;
-    private boolean valid = true;
+    private boolean validElementPlacement = true;
 
     StringBuilder titleBuild, linkBuild, dateBuild, descriptionBuild;
 
     public ArrayList<Entry> getEntries() { return entries; }
 
-    public boolean isValidRSS() { return valid && rssElementCount == 1
+    public boolean isValidRSS() { return validElementPlacement && rssElementCount == 1
             && channelElementCount == 1; }
 
     public void startElement(String uri, String localName, @NonNull String startElement,
                              Attributes attributes)
     {
-        if(startElement.equals("item") && channelElementCount != 1) valid = false;
-        if(startElement.equals("item") && currentEntry != null) valid = false;
-        if(startElement.equals("channel") && rssElementCount != 1) valid = false;
+        if(startElement.equals("item") && channelElementCount != 1) validElementPlacement = false;
+        if(startElement.equals("item") && currentEntry != null) validElementPlacement = false;
+        if(startElement.equals("channel") && rssElementCount != 1) validElementPlacement = false;
 
         titleBuild = new StringBuilder();
         linkBuild = new StringBuilder();

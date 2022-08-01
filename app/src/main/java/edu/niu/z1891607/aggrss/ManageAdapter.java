@@ -1,12 +1,10 @@
 package edu.niu.z1891607.aggrss;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -16,11 +14,9 @@ public class ManageAdapter extends BaseAdapter
 {
     private final ArrayList<Feed> feeds;
     private final Context context;
-    private final DatabaseManager dbManager;
 
     public ManageAdapter(ArrayList<Feed> feeds, Context context)
     {
-        this.dbManager = new DatabaseManager(context);
         this.feeds = feeds;
         this.context = context;
     }
@@ -61,6 +57,7 @@ public class ManageAdapter extends BaseAdapter
 
         ImageButton deleteBtn = convert.findViewById(R.id.delete_btn);
         deleteBtn.setOnClickListener(v -> {
+            DatabaseManager dbManager = new DatabaseManager(context);
             dbManager.deleteFeedById(feeds.get(pos).getId());
             feeds.remove(pos);
             notifyDataSetChanged();

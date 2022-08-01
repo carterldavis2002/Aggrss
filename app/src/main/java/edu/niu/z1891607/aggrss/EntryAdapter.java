@@ -8,7 +8,6 @@ import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
 import android.widget.TextView;
@@ -75,11 +74,11 @@ public class EntryAdapter extends BaseExpandableListAdapter
     public View getChildView(int pos, int expandedPos, boolean isLastChild, View convert,
                              ViewGroup parent)
     {
-        Entry currentEntry = (Entry) getGroup(pos);
-
         if(convert == null)
             convert = LayoutInflater.from(context).inflate(R.layout.view_feed_list_item, parent,
                     false);
+
+        Entry currentEntry = (Entry) getGroup(pos);
 
         TextView descriptionTV = convert.findViewById(R.id.description_tv);
         descriptionTV.setText(Html.fromHtml(currentEntry.getDescription()));
