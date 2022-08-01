@@ -101,6 +101,14 @@ public class ViewFeedFragment extends Fragment {
             refreshLayout.setRefreshing(false);
         });
 
+        listView.setOnGroupExpandListener(i -> {
+            if(adapter == null) return;
+
+            for(int j = 0;j < adapter.getGroupCount();j++) {
+                if(j != i) listView.collapseGroup(j);
+            }
+        });
+
         getAndDisplayEntries();
     }
 
