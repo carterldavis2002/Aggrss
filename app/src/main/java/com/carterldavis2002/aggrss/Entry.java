@@ -1,4 +1,4 @@
-package edu.niu.z1891607.aggrss;
+package com.carterldavis2002.aggrss;
 
 public class Entry
 {

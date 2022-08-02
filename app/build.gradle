@@ -6,7 +6,7 @@ android {
     compileSdk 32
 
     defaultConfig {
-        applicationId "edu.niu.z1891607.aggrss"
+        applicationId "com.carterldavis2002.aggrss"
         minSdk 16
         targetSdk 32
         versionCode 1

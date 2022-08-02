@@ -1,13 +1,13 @@
-package edu.niu.z1891607.aggrss;
+package com.carterldavis2002.aggrss;
 
 import android.text.Html;
 
 import androidx.annotation.NonNull;
 
-import java.util.ArrayList;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
+
+import java.util.ArrayList;
 
 public class SAXHandler extends DefaultHandler
 {
