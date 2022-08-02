@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.parsers.SAXParserFactory;
 
@@ -57,6 +58,9 @@ public class ViewFeedFragment extends Fragment {
     private boolean chosenDates;
 
     private View inflatedDialog;
+
+    private TextView noResultsTV;
+    private TextView fetchingTV;
 
     private SwipeRefreshLayout refreshLayout;
 
@@ -80,6 +84,9 @@ public class ViewFeedFragment extends Fragment {
         super.onViewCreated(v, savedInstanceState);
         refreshLayout = v.findViewById(R.id.refresh_layout);
         listView = v.findViewById(R.id.feed_entries_list);
+        noResultsTV = v.findViewById(R.id.no_results_tv);
+        fetchingTV = v.findViewById(R.id.fetching_tv);
+
     }
 
     @Override
@@ -150,6 +157,9 @@ public class ViewFeedFragment extends Fragment {
                 filterEntriesByKeywordAndDate(searchTerm, formatter, true);
 
                 sortEntriesByDateTime(formatter, entries, descending);
+
+                if(entries.size() == 0) noResultsTV.setVisibility(View.VISIBLE);
+                else noResultsTV.setVisibility(View.GONE);
             });
 
             builder.setNegativeButton(getString(R.string.search_dialog_negative_button),
@@ -164,10 +174,19 @@ public class ViewFeedFragment extends Fragment {
     }
 
     private void getAndDisplayEntries() {
+        noResultsTV.setVisibility(View.GONE);
+        fetchingTV.setVisibility(View.VISIBLE);
+
         entries = new ArrayList<>();
         adapter = new EntryAdapter(entries, getContext());
         listView.setAdapter(adapter);
 
+        if(dbManager.selectAllFeeds().size() == 0) {
+            fetchingTV.setVisibility(View.GONE);
+            noResultsTV.setVisibility(View.VISIBLE);
+        }
+
+        AtomicInteger feedsParsed = new AtomicInteger();
         for(Feed feed : dbManager.selectAllFeeds()) {
             Executor executor = Executors.newSingleThreadExecutor();
             Handler handler = new Handler(Looper.getMainLooper());
@@ -181,6 +200,8 @@ public class ViewFeedFragment extends Fragment {
                 }
 
                 handler.post(() -> {
+                    feedsParsed.getAndIncrement();
+
                     DateTimeFormatter rfc1123Formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
                     DateTimeFormatter localizedFormatter = DateTimeFormatter.ofLocalizedDateTime(
                             FormatStyle.MEDIUM, FormatStyle.SHORT);
@@ -221,7 +242,14 @@ public class ViewFeedFragment extends Fragment {
 
                         entries.addAll(retrievedEntries);
                         sortEntriesByDateTime(localizedFormatter, entries, descending);
+                    }
+
+                    if(feedsParsed.get() == dbManager.selectAllFeeds().size()) {
+                        fetchingTV.setVisibility(View.GONE);
                         adapter.notifyDataSetChanged();
+
+                        if(entries.size() == 0)
+                            noResultsTV.setVisibility(View.VISIBLE);
                     }
                 });
             });

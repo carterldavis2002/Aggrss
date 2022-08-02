@@ -64,4 +64,6 @@
     <string name="search_dialog_negative_button">Cancel</string>
 
     <string name="date_picker_title">Select range of dates</string>
+
+    <string name="no_feed_entries_found">NO FEED ENTRIES FOUND</string>
 </resources>
