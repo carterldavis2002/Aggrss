@@ -63,6 +63,7 @@ public class ViewFeedFragment extends Fragment {
     private TextView fetchingTV;
 
     private SwipeRefreshLayout refreshLayout;
+    private boolean refreshing = true;
 
     public ViewFeedFragment() {}
 
@@ -103,8 +104,11 @@ public class ViewFeedFragment extends Fragment {
                 == R.string.sort_dropdown_newest;
 
         refreshLayout.setOnRefreshListener(() -> {
-            getAndDisplayEntries();
-            removedEntries.clear();
+            if(!refreshing) {
+                refreshing = true;
+                getAndDisplayEntries();
+                removedEntries.clear();
+            }
             refreshLayout.setRefreshing(false);
         });
 
@@ -247,6 +251,7 @@ public class ViewFeedFragment extends Fragment {
                     if(feedsParsed.get() == dbManager.selectAllFeeds().size()) {
                         fetchingTV.setVisibility(View.GONE);
                         adapter.notifyDataSetChanged();
+                        refreshing = false;
 
                         if(entries.size() == 0)
                             noResultsTV.setVisibility(View.VISIBLE);
