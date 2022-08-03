@@ -306,8 +306,8 @@ public class ViewFeedFragment extends Fragment {
                 adapter.notifyDataSetChanged();
             }
             else if(removed && (e.getTitle().toLowerCase().contains(searchTerm)
-                    || ((ldt.compareTo(startDate) >= 0) && chosenDates)
-                    || ((ldt.compareTo(endDate) < 0) && chosenDates))) {
+                    && ((ldt.compareTo(startDate) >= 0)
+                    && (ldt.compareTo(endDate) < 0) || !chosenDates))) {
                 entries.add(e);
 
                 it.remove();
